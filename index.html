@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI/ML Detailed Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #1e1e2e;
+    --border2: #252535;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --muted2: #475569;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events:none; z-index:0;
+  }
+  .container { max-width:960px; margin:0 auto; padding:44px 20px 100px; position:relative; z-index:1; }
+
+  /* HEADER */
+  header { text-align:center; margin-bottom:52px; animation: fadeDown .7s ease both; }
+  .badge {
+    display:inline-block; font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+    color:#00e5ff; border:1px solid #00e5ff; padding:4px 16px; border-radius:2px;
+    margin-bottom:18px; opacity:.8;
+  }
+  h1 {
+    font-family:'Syne',sans-serif; font-size:clamp(2rem,5.5vw,3.6rem); font-weight:800;
+    line-height:1.05;
+    background: linear-gradient(135deg,#fff 0%,#00e5ff 45%,#7c3aed 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-bottom:12px;
+  }
+  .subtitle { color:var(--muted); font-size:12px; letter-spacing:.06em; }
+
+  /* STATS */
+  .stats { display:flex; gap:12px; margin-bottom:36px; flex-wrap:wrap; animation:fadeUp .6s .1s ease both; }
+  .stat-box {
+    flex:1; min-width:110px; background:var(--surface); border:1px solid var(--border);
+    border-radius:6px; padding:13px 16px; text-align:center;
+  }
+  .stat-val {
+    font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800;
+    background:linear-gradient(135deg,#00e5ff,#7c3aed);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .stat-label { font-size:9px; color:var(--muted); letter-spacing:.13em; margin-top:3px; }
+
+  /* PROGRESS */
+  .progress-wrap {
+    background:var(--surface); border:1px solid var(--border); border-radius:4px;
+    padding:14px 20px; margin-bottom:48px; display:flex; align-items:center; gap:14px;
+    animation:fadeUp .6s .15s ease both;
+  }
+  .progress-label { font-size:10px; color:var(--muted); white-space:nowrap; letter-spacing:.12em; }
+  .progress-track { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#00e5ff,#7c3aed); border-radius:2px; width:0%; transition:width 1s cubic-bezier(.4,0,.2,1); }
+  .progress-pct { font-size:11px; color:#00e5ff; min-width:34px; text-align:right; }
+
+  /* PHASE */
+  .phase { margin-bottom:10px; animation:fadeUp .5s ease both; }
+  .phase-header {
+    display:flex; align-items:center; gap:14px; padding:16px 20px;
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    cursor:pointer; user-select:none; transition:border-color .2s;
+  }
+  .phase-header:hover { border-color: var(--phase-color, #00e5ff); }
+  .phase.open .phase-header { border-radius:8px 8px 0 0; border-bottom-color: var(--border2); }
+  .phase-num {
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-family:'Syne',sans-serif; font-weight:700; font-size:13px;
+    flex-shrink:0; border:2px solid var(--phase-color,#00e5ff); color:var(--phase-color,#00e5ff);
+    transition:box-shadow .3s;
+  }
+  .phase.open .phase-num { box-shadow: 0 0 14px var(--phase-glow,rgba(0,229,255,.35)); }
+  .phase-title-wrap { flex:1; }
+  .phase-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; color:var(--phase-color,#00e5ff); }
+  .phase-meta { font-size:10px; color:var(--muted); letter-spacing:.1em; margin-top:2px; }
+  .phase-toggle { font-size:16px; color:var(--muted); transition:transform .25s; }
+  .phase.open .phase-toggle { transform:rotate(180deg); }
+
+  /* PHASE BODY */
+  .phase-body {
+    display:none; background:var(--surface2); border:1px solid var(--border);
+    border-top:none; border-radius:0 0 8px 8px; overflow:hidden;
+  }
+  .phase.open .phase-body { display:block; }
+
+  /* TOPIC */
+  .topic {
+    border-bottom:1px solid var(--border);
+    transition:background .15s;
+  }
+  .topic:last-child { border-bottom:none; }
+
+  .topic-header {
+    display:grid; grid-template-columns:18px 1fr auto auto;
+    align-items:center; gap:14px; padding:13px 20px 13px 20px;
+    cursor:pointer; transition:background .15s;
+  }
+  .topic-header:hover { background:rgba(255,255,255,.02); }
+
+  .topic-check {
+    width:17px; height:17px; border:1.5px solid var(--muted2); border-radius:3px;
+    display:flex; align-items:center; justify-content:center; font-size:10px;
+    flex-shrink:0; transition:all .2s; cursor:pointer;
+  }
+  .topic.done .topic-check { background:#10b981; border-color:#10b981; color:#000; }
+
+  .topic-name { font-size:12.5px; font-weight:500; color:var(--text); }
+  .topic.done .topic-name { text-decoration:line-through; color:var(--muted); }
+
+  .topic-tag {
+    font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    padding:3px 8px; border-radius:2px; white-space:nowrap; flex-shrink:0;
+    background:var(--tag-bg,rgba(0,229,255,.08)); color:var(--phase-color,#00e5ff);
+  }
+  .subtoggle {
+    font-size:11px; color:var(--muted); padding:2px 6px; border-radius:3px;
+    background:var(--border); cursor:pointer; white-space:nowrap; transition:color .2s;
+    flex-shrink:0;
+  }
+  .topic.sub-open .subtoggle { color:var(--phase-color,#00e5ff); }
+
+  /* SUBTOPICS */
+  .subtopics {
+    display:none; padding:0 20px 14px 52px;
+    background:rgba(0,0,0,.25);
+  }
+  .topic.sub-open .subtopics { display:block; }
+  .subtopics-label {
+    font-size:9px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase;
+    margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border);
+  }
+  .sub-list { list-style:none; display:flex; flex-direction:column; gap:5px; }
+  .sub-item {
+    display:flex; align-items:flex-start; gap:10px; padding:6px 10px;
+    border-radius:4px; cursor:pointer; transition:background .15s;
+  }
+  .sub-item:hover { background:rgba(255,255,255,.03); }
+  .sub-check {
+    width:14px; height:14px; border:1.5px solid var(--border2); border-radius:2px;
+    display:flex; align-items:center; justify-content:center; font-size:8px;
+    flex-shrink:0; margin-top:1px; transition:all .2s;
+  }
+  .sub-item.done .sub-check { background:#10b981; border-color:#10b981; color:#000; }
+  .sub-text { flex:1; }
+  .sub-name { font-size:11.5px; color:var(--text); margin-bottom:2px; }
+  .sub-item.done .sub-name { text-decoration:line-through; color:var(--muted); }
+  .sub-desc { font-size:10px; color:var(--muted); line-height:1.5; }
+
+  /* connector */
+  .connector { width:2px; height:18px; margin-left:36px; background:linear-gradient(var(--border),transparent); }
+
+  /* Resources */
+  .resources {
+    margin-top:44px; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:26px; animation:fadeUp .6s .4s ease both;
+  }
+  .resources h3 {
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#f59e0b;
+    letter-spacing:.15em; text-transform:uppercase; margin-bottom:18px;
+  }
+  .res-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:10px; }
+  .res-item { border:1px solid var(--border); border-radius:4px; padding:11px 14px; }
+  .res-name { font-size:12px; color:var(--text); margin-bottom:3px; }
+  .res-type { font-size:9px; color:var(--muted); letter-spacing:.1em; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(16px)}  to{opacity:1;transform:translateY(0)} }
+  .phase:nth-child(1){animation-delay:.05s} .phase:nth-child(2){animation-delay:.1s}
+  .phase:nth-child(3){animation-delay:.15s} .phase:nth-child(4){animation-delay:.2s}
+  .phase:nth-child(5){animation-delay:.25s} .phase:nth-child(6){animation-delay:.3s}
+  .phase:nth-child(7){animation-delay:.35s}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="badge">Detailed Learning Path · 2026</div>
+  <h1>AI / ML Roadmap</h1>
+  <p class="subtitle">// click topics to expand subtopics · check off as you go</p>
+</header>
+
+<div class="stats">
+  <div class="stat-box"><div class="stat-val">7</div><div class="stat-label">PHASES</div></div>
+  <div class="stat-box"><div class="stat-val" id="totalTopics">0</div><div class="stat-label">TOPICS</div></div>
+  <div class="stat-box"><div class="stat-val" id="totalSubs">0</div><div class="stat-label">SUBTOPICS</div></div>
+  <div class="stat-box"><div class="stat-val" id="doneSubs">0</div><div class="stat-label">COMPLETED</div></div>
+  <div class="stat-box"><div class="stat-val">~20mo</div><div class="stat-label">ESTIMATED</div></div>
+</div>
+
+<div class="progress-wrap">
+  <span class="progress-label">SUBTOPIC PROGRESS</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+</div>
+
+<div id="roadmap"></div>
+
+<div class="resources">
+  <h3>📚 Essential Resources</h3>
+  <div class="res-grid">
+    <div class="res-item"><div class="res-name">3Blue1Brown</div><div class="res-type">VIDEO · LINEAR ALGEBRA & CALCULUS</div></div>
+    <div class="res-item"><div class="res-name">Khan Academy</div><div class="res-type">FREE · MATH FOUNDATIONS</div></div>
+    <div class="res-item"><div class="res-name">fast.ai</div><div class="res-type">FREE COURSE · DEEP LEARNING</div></div>
+    <div class="res-item"><div class="res-name">CS229 Stanford</div><div class="res-type">FREE LECTURES · ML THEORY</div></div>
+    <div class="res-item"><div class="res-name">Deep Learning Book</div><div class="res-type">FREE BOOK · GOODFELLOW ET AL</div></div>
+    <div class="res-item"><div class="res-name">Andrej Karpathy</div><div class="res-type">VIDEO · NEURAL NETS FROM SCRATCH</div></div>
+    <div class="res-item"><div class="res-name">Kaggle</div><div class="res-type">PLATFORM · COMPETITIONS & DATASETS</div></div>
+    <div class="res-item"><div class="res-name">Hugging Face</div><div class="res-type">MODELS · DATASETS · SPACES</div></div>
+    <div class="res-item"><div class="res-name">Papers With Code</div><div class="res-type">RESEARCH + IMPLEMENTATIONS</div></div>
+    <div class="res-item"><div class="res-name">StatQuest</div><div class="res-type">VIDEO · STATS & ML INTUITION</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const phases = [
+  {
+    id:"ph1", num:1, title:"Mathematics for AI/ML", duration:"2–3 months",
+    color:"#00e5ff", glow:"rgba(0,229,255,.35)",
+    topics:[
+      { name:"Linear Algebra", tag:"Math",
+        subs:[
+          { name:"Scalars, Vectors & Matrices", desc:"Types of tensors, notation, shapes, indexing" },
+          { name:"Matrix Operations", desc:"Addition, subtraction, multiplication, transpose" },
+          { name:"Dot Product & Norms", desc:"L1, L2 norms, cosine similarity, geometric intuition" },
+          { name:"Linear Transformations", desc:"How matrices transform space, rotation, scaling" },
+          { name:"Identity & Inverse Matrix", desc:"Solving Ax=b, conditions for invertibility" },
+          { name:"Determinants", desc:"Area/volume scaling, singular matrices" },
+          { name:"Eigenvalues & Eigenvectors", desc:"Diagonalization, PCA foundation, stability analysis" },
+          { name:"Singular Value Decomposition (SVD)", desc:"Factorization, low-rank approximation, applications in ML" },
+          { name:"Span, Basis & Rank", desc:"Vector spaces, column space, null space" },
+        ]
+      },
+      { name:"Calculus & Optimization", tag:"Math",
+        subs:[
+          { name:"Limits & Continuity", desc:"Intuition before derivatives, epsilon-delta basics" },
+          { name:"Derivatives", desc:"Power rule, product rule, quotient rule, chain rule" },
+          { name:"Partial Derivatives", desc:"Functions of multiple variables, gradient vector" },
+          { name:"Gradient & Directional Derivative", desc:"Direction of steepest ascent, geometric meaning" },
+          { name:"Chain Rule (Multivariable)", desc:"Core of backpropagation — deeply understand this" },
+          { name:"Jacobian & Hessian", desc:"First & second order optimization, curvature" },
+          { name:"Taylor Series", desc:"Local approximations, why it matters in optimization" },
+          { name:"Gradient Descent", desc:"Vanilla GD, learning rate, convergence intuition" },
+          { name:"Integrals & Probability Connection", desc:"Area under curve, expectations as integrals" },
+        ]
+      },
+      { name:"Probability & Statistics", tag:"Math",
+        subs:[
+          { name:"Sample Space & Events", desc:"Basic probability, union, intersection, complement" },
+          { name:"Conditional Probability", desc:"P(A|B), dependent vs independent events" },
+          { name:"Bayes' Theorem", desc:"Prior, likelihood, posterior — core of probabilistic ML" },
+          { name:"Random Variables", desc:"Discrete vs continuous, PMF, PDF, CDF" },
+          { name:"Key Distributions", desc:"Normal, Bernoulli, Binomial, Poisson, Uniform, Exponential" },
+          { name:"Expectation & Variance", desc:"Mean, variance, standard deviation, covariance" },
+          { name:"Central Limit Theorem", desc:"Why we assume normality in many ML models" },
+          { name:"Maximum Likelihood Estimation", desc:"MLE, loss functions as log-likelihood" },
+          { name:"Information Theory Basics", desc:"Entropy, cross-entropy, KL divergence — used everywhere in DL" },
+        ]
+      },
+      { name:"Discrete Math & Logic", tag:"Math",
+        subs:[
+          { name:"Sets & Set Operations", desc:"Union, intersection, difference, power sets" },
+          { name:"Functions & Relations", desc:"Injective, surjective, bijective — key for understanding mappings" },
+          { name:"Combinatorics", desc:"Permutations, combinations, counting principles" },
+          { name:"Graph Theory Basics", desc:"Nodes, edges, adjacency — used in GNNs later" },
+          { name:"Logic & Proof Techniques", desc:"Propositional logic, induction, contradiction proofs" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph2", num:2, title:"Python & Data Tools", duration:"1–2 months",
+    color:"#a78bfa", glow:"rgba(124,58,237,.35)",
+    topics:[
+      { name:"Python Core", tag:"Python",
+        subs:[
+          { name:"Variables, Types & Operators", desc:"int, float, str, bool, type casting, arithmetic" },
+          { name:"Control Flow", desc:"if/elif/else, for, while loops, break/continue" },
+          { name:"Functions", desc:"def, args, kwargs, *args, **kwargs, lambda" },
+          { name:"Data Structures", desc:"list, tuple, dict, set — operations and comprehensions" },
+          { name:"OOP Basics", desc:"Classes, objects, inheritance, __init__, methods" },
+          { name:"File I/O & Exceptions", desc:"open(), read/write files, try/except/finally" },
+          { name:"Modules & Packages", desc:"import, pip, virtual environments, requirements.txt" },
+        ]
+      },
+      { name:"NumPy", tag:"Library",
+        subs:[
+          { name:"Arrays & Shapes", desc:"np.array, ndim, shape, reshape, dtype" },
+          { name:"Array Operations", desc:"Arithmetic, broadcasting rules, universal functions" },
+          { name:"Indexing & Slicing", desc:"Boolean indexing, fancy indexing, np.where" },
+          { name:"Linear Algebra with NumPy", desc:"np.dot, np.linalg.inv, np.linalg.eig, matmul" },
+          { name:"Random Module", desc:"np.random.seed, randn, randint, shuffle" },
+        ]
+      },
+      { name:"Pandas", tag:"Library",
+        subs:[
+          { name:"Series & DataFrame", desc:"Creating, loading CSV/JSON, basic inspection" },
+          { name:"Indexing & Selection", desc:"loc, iloc, boolean filtering, query()" },
+          { name:"Data Cleaning", desc:"dropna, fillna, duplicates, type conversion" },
+          { name:"GroupBy & Aggregation", desc:"groupby, agg, pivot_table, crosstab" },
+          { name:"Merging & Reshaping", desc:"merge, concat, melt, stack/unstack" },
+        ]
+      },
+      { name:"Matplotlib & Seaborn", tag:"Viz",
+        subs:[
+          { name:"Line, Bar & Scatter Plots", desc:"plt.plot, plt.bar, plt.scatter, labels, titles" },
+          { name:"Histograms & Distributions", desc:"sns.histplot, kde, boxplot, violin" },
+          { name:"Heatmaps & Correlation", desc:"sns.heatmap, correlation matrix visualization" },
+          { name:"Subplots & Layouts", desc:"plt.subplots, figure sizing, multi-plot dashboards" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph3", num:3, title:"Classical Machine Learning", duration:"2–3 months",
+    color:"#f59e0b", glow:"rgba(245,158,11,.35)",
+    topics:[
+      { name:"Supervised Learning — Regression", tag:"ML",
+        subs:[
+          { name:"Simple Linear Regression", desc:"y=mx+b, least squares, residuals, R²" },
+          { name:"Multiple Linear Regression", desc:"Matrix form, multicollinearity, assumptions" },
+          { name:"Polynomial Regression", desc:"Feature transformation, overfitting with high degree" },
+          { name:"Ridge & Lasso", desc:"L2 and L1 regularization, bias-variance tradeoff" },
+          { name:"ElasticNet", desc:"Combined L1+L2, when to use vs Ridge/Lasso" },
+        ]
+      },
+      { name:"Supervised Learning — Classification", tag:"ML",
+        subs:[
+          { name:"Logistic Regression", desc:"Sigmoid, log-odds, binary & multiclass (softmax)" },
+          { name:"K-Nearest Neighbors", desc:"Distance metrics, curse of dimensionality" },
+          { name:"Naive Bayes", desc:"Bayes classifier, Gaussian NB, text classification" },
+          { name:"Support Vector Machines", desc:"Hyperplane, margin, kernel trick (RBF, poly)" },
+          { name:"Decision Trees", desc:"Gini impurity, entropy, information gain, pruning" },
+        ]
+      },
+      { name:"Ensemble Methods", tag:"ML",
+        subs:[
+          { name:"Bagging & Bootstrap", desc:"Sampling with replacement, variance reduction" },
+          { name:"Random Forests", desc:"Feature subsampling, OOB error, feature importance" },
+          { name:"Gradient Boosting", desc:"Weak learners, residuals, learning rate, shrinkage" },
+          { name:"XGBoost", desc:"Regularized boosting, second-order gradients, speed tricks" },
+          { name:"LightGBM & CatBoost", desc:"Leaf-wise growth, categorical features, GPU support" },
+          { name:"Stacking & Blending", desc:"Meta-learner, cross-val stacking, blending strategies" },
+        ]
+      },
+      { name:"Unsupervised Learning", tag:"ML",
+        subs:[
+          { name:"K-Means Clustering", desc:"Centroid update, elbow method, k-means++ init" },
+          { name:"DBSCAN", desc:"Density-based, core/border/noise points, ε & minPts" },
+          { name:"Hierarchical Clustering", desc:"Dendrograms, agglomerative vs divisive" },
+          { name:"PCA", desc:"Variance explained, scree plot, projections — connects to SVD" },
+          { name:"t-SNE & UMAP", desc:"Non-linear dimensionality reduction, visualization" },
+          { name:"Anomaly Detection", desc:"Isolation forest, LOF, one-class SVM" },
+        ]
+      },
+      { name:"Model Evaluation & Tuning", tag:"ML",
+        subs:[
+          { name:"Train/Val/Test Split", desc:"Holdout vs cross-validation, data leakage" },
+          { name:"Classification Metrics", desc:"Accuracy, precision, recall, F1, ROC-AUC, confusion matrix" },
+          { name:"Regression Metrics", desc:"MAE, MSE, RMSE, MAPE, R²" },
+          { name:"Cross-Validation", desc:"K-Fold, Stratified K-Fold, leave-one-out" },
+          { name:"Hyperparameter Tuning", desc:"GridSearchCV, RandomizedSearch, Bayesian optimization" },
+          { name:"Bias-Variance Tradeoff", desc:"Diagnosing underfitting vs overfitting, learning curves" },
+        ]
+      },
+      { name:"Feature Engineering & Pipelines", tag:"ML",
+        subs:[
+          { name:"Encoding Categoricals", desc:"One-hot, label encoding, target encoding, ordinal" },
+          { name:"Scaling & Normalization", desc:"StandardScaler, MinMax, RobustScaler, when to use" },
+          { name:"Handling Missing Data", desc:"Imputation strategies, MCAR/MAR/MNAR types" },
+          { name:"Feature Selection", desc:"Variance threshold, SelectKBest, RFECV, permutation importance" },
+          { name:"Sklearn Pipelines", desc:"Pipeline, ColumnTransformer, custom transformers" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph4", num:4, title:"Deep Learning", duration:"3–4 months",
+    color:"#10b981", glow:"rgba(16,185,129,.35)",
+    topics:[
+      { name:"Neural Network Fundamentals", tag:"DL",
+        subs:[
+          { name:"Perceptron & McCulloch-Pitts", desc:"Historical model, threshold logic, XOR problem" },
+          { name:"Multi-Layer Perceptron (MLP)", desc:"Input/hidden/output layers, weights & biases" },
+          { name:"Activation Functions", desc:"Sigmoid, tanh, ReLU, Leaky ReLU, GELU, Swish" },
+          { name:"Forward Propagation", desc:"Matrix multiplications through layers, output computation" },
+          { name:"Loss Functions", desc:"MSE, BCE, cross-entropy, hinge loss, choosing the right one" },
+          { name:"Backpropagation", desc:"Chain rule application, computing gradients layer by layer" },
+          { name:"Gradient Descent Variants", desc:"SGD, Momentum, RMSProp, Adam, AdaGrad" },
+        ]
+      },
+      { name:"PyTorch", tag:"Framework",
+        subs:[
+          { name:"Tensors", desc:"Creation, shapes, dtype, device (CPU/GPU), operations" },
+          { name:"Autograd", desc:"requires_grad, .backward(), computational graph" },
+          { name:"nn.Module", desc:"Building models, __init__, forward(), parameters()" },
+          { name:"DataLoader & Dataset", desc:"Custom Dataset class, batching, shuffling, transforms" },
+          { name:"Training Loop", desc:"optimizer.zero_grad(), loss.backward(), optimizer.step()" },
+          { name:"Saving & Loading Models", desc:"state_dict, torch.save/load, checkpointing" },
+        ]
+      },
+      { name:"Regularization & Training Tricks", tag:"DL",
+        subs:[
+          { name:"Dropout", desc:"Random neuron deactivation, p parameter, eval vs train mode" },
+          { name:"Batch Normalization", desc:"Normalizing activations, gamma/beta, training stability" },
+          { name:"Layer Normalization", desc:"Normalizing across features — used in transformers" },
+          { name:"Weight Initialization", desc:"Xavier/Glorot, He initialization, why it matters" },
+          { name:"Learning Rate Schedules", desc:"StepLR, CosineAnnealing, ReduceLROnPlateau, warmup" },
+          { name:"Early Stopping", desc:"Patience, monitoring val loss, saving best checkpoint" },
+          { name:"Data Augmentation", desc:"Flip, crop, rotation, color jitter, mixup, cutout" },
+        ]
+      },
+      { name:"Convolutional Neural Networks", tag:"DL",
+        subs:[
+          { name:"Convolution Operation", desc:"Kernel, stride, padding, feature maps, receptive field" },
+          { name:"Pooling Layers", desc:"MaxPool, AvgPool, global average pooling" },
+          { name:"Classic Architectures", desc:"LeNet, AlexNet, VGG — understand design evolution" },
+          { name:"ResNet & Skip Connections", desc:"Residual blocks, why they solve vanishing gradients" },
+          { name:"Transfer Learning", desc:"Freeze layers, fine-tune, feature extraction, pretrained weights" },
+          { name:"Object Detection Basics", desc:"Bounding boxes, IoU, YOLO overview, anchor boxes" },
+        ]
+      },
+      { name:"Recurrent Neural Networks", tag:"DL",
+        subs:[
+          { name:"Vanilla RNN", desc:"Hidden state, unrolling, backprop through time (BPTT)" },
+          { name:"Vanishing Gradient Problem", desc:"Why gradients shrink/explode over long sequences" },
+          { name:"LSTM", desc:"Forget/input/output gates, cell state, long-term memory" },
+          { name:"GRU", desc:"Simplified gating, reset & update gate, performance vs LSTM" },
+          { name:"Sequence-to-Sequence", desc:"Encoder-decoder, teacher forcing, beam search" },
+        ]
+      },
+      { name:"GPU Training & Efficiency", tag:"Infra",
+        subs:[
+          { name:"CUDA Basics", desc:"GPU memory, device management, .to(device)" },
+          { name:"Mixed Precision Training", desc:"FP16 vs FP32, torch.cuda.amp, speed gains" },
+          { name:"Gradient Accumulation", desc:"Simulating large batches on limited memory" },
+          { name:"Profiling & Bottlenecks", desc:"torch.profiler, DataLoader num_workers, pin_memory" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph5", num:5, title:"NLP & Transformers", duration:"2–3 months",
+    color:"#f43f5e", glow:"rgba(244,63,94,.35)",
+    topics:[
+      { name:"NLP Fundamentals", tag:"NLP",
+        subs:[
+          { name:"Text Preprocessing", desc:"Lowercasing, punctuation removal, stopwords, stemming, lemmatization" },
+          { name:"Tokenization", desc:"Word, subword (BPE, WordPiece), character-level tokenizers" },
+          { name:"Bag of Words & TF-IDF", desc:"Document vectors, sparse representations, limitations" },
+          { name:"Word Embeddings", desc:"Word2Vec (CBOW, Skip-gram), GloVe, FastText" },
+          { name:"Text Classification", desc:"Sentiment, topic classification with classical + DL models" },
+        ]
+      },
+      { name:"Attention Mechanism", tag:"NLP",
+        subs:[
+          { name:"Seq2Seq with Attention", desc:"Bahdanau attention, context vector, alignment scores" },
+          { name:"Self-Attention", desc:"Query, Key, Value matrices — the core operation" },
+          { name:"Scaled Dot-Product Attention", desc:"QKᵀ/√d_k, softmax, weighted sum of values" },
+          { name:"Multi-Head Attention", desc:"Parallel attention heads, concatenation, projection" },
+          { name:"Cross-Attention", desc:"Attending to another sequence — encoder-decoder attention" },
+        ]
+      },
+      { name:"Transformer Architecture", tag:"NLP",
+        subs:[
+          { name:"Positional Encoding", desc:"Sinusoidal encoding, why order matters for attention" },
+          { name:"Encoder Block", desc:"Self-attn + Add&Norm + FFN + Add&Norm, stacking layers" },
+          { name:"Decoder Block", desc:"Masked self-attn, cross-attn, causal masking" },
+          { name:"Full Encoder-Decoder", desc:"Original 'Attention Is All You Need' architecture" },
+          { name:"Encoder-Only (BERT-style)", desc:"Bidirectional context, masked language modeling" },
+          { name:"Decoder-Only (GPT-style)", desc:"Causal language modeling, autoregressive generation" },
+        ]
+      },
+      { name:"Pre-trained Models & Fine-tuning", tag:"LLM",
+        subs:[
+          { name:"BERT & Variants", desc:"RoBERTa, DistilBERT, ALBERT — fine-tuning for classification/NER" },
+          { name:"GPT Family", desc:"GPT-2, GPT-3, GPT-4 — causal LM, prompt-based generation" },
+          { name:"Hugging Face Transformers", desc:"AutoModel, AutoTokenizer, Trainer API, pipelines" },
+          { name:"Fine-tuning with Hugging Face", desc:"Task-specific heads, learning rate warmup, eval steps" },
+          { name:"LoRA & PEFT", desc:"Low-rank adaptation, trainable params reduction, adapter layers" },
+          { name:"Instruction Tuning", desc:"FLAN, InstructGPT, formatting prompts for task following" },
+          { name:"RLHF Basics", desc:"Reward model, PPO, human preference alignment overview" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph6", num:6, title:"Specializations (pick 1–2)", duration:"2–4 months",
+    color:"#fb923c", glow:"rgba(251,146,60,.35)",
+    topics:[
+      { name:"Computer Vision (Advanced)", tag:"Vision",
+        subs:[
+          { name:"Vision Transformer (ViT)", desc:"Patch embeddings, positional encoding, classification heads" },
+          { name:"Object Detection Deep Dive", desc:"Faster R-CNN, DETR, YOLOv8, evaluation with mAP" },
+          { name:"Semantic Segmentation", desc:"FCN, U-Net, DeepLab, pixel-wise classification" },
+          { name:"Diffusion Models", desc:"Forward/reverse diffusion, DDPM, DDIM, score matching" },
+          { name:"Stable Diffusion", desc:"Latent diffusion, CLIP conditioning, ControlNet, LoRA" },
+        ]
+      },
+      { name:"Reinforcement Learning", tag:"RL",
+        subs:[
+          { name:"MDPs & Bellman Equations", desc:"States, actions, rewards, transition probability, discounting" },
+          { name:"Dynamic Programming", desc:"Value iteration, policy iteration, tabular methods" },
+          { name:"Q-Learning", desc:"Q-table, epsilon-greedy, temporal difference learning" },
+          { name:"Deep Q-Network (DQN)", desc:"Experience replay, target network, Atari results" },
+          { name:"Policy Gradient Methods", desc:"REINFORCE, advantage function, actor-critic" },
+          { name:"PPO", desc:"Clipped objective, trust region, state-of-the-art policy optimization" },
+        ]
+      },
+      { name:"Generative AI", tag:"GenAI",
+        subs:[
+          { name:"Variational Autoencoders (VAE)", desc:"Encoder, reparameterization trick, ELBO loss" },
+          { name:"GANs", desc:"Generator, discriminator, minimax game, training instability" },
+          { name:"Normalizing Flows", desc:"Invertible mappings, change of variables, density estimation" },
+          { name:"Text-to-Image Models", desc:"DALL-E, Midjourney architecture overview, CLIP guidance" },
+          { name:"LLM Prompting & RAG", desc:"Prompt engineering, retrieval-augmented generation, vector DBs" },
+        ]
+      },
+      { name:"Time Series", tag:"TS",
+        subs:[
+          { name:"Time Series Basics", desc:"Trend, seasonality, stationarity, ACF/PACF plots" },
+          { name:"Classical Methods", desc:"ARIMA, SARIMA, Exponential Smoothing" },
+          { name:"Prophet", desc:"Facebook Prophet, holidays, changepoints, decomposition" },
+          { name:"Deep Learning for TS", desc:"TCN, WaveNet, N-BEATS, Temporal Fusion Transformer" },
+          { name:"Evaluation Metrics", desc:"MAE, MASE, sMAPE, pinball loss for probabilistic forecasts" },
+        ]
+      },
+    ]
+  },
+  {
+    id:"ph7", num:7, title:"MLOps & Production", duration:"2–3 months",
+    color:"#38bdf8", glow:"rgba(56,189,248,.35)",
+    topics:[
+      { name:"Experiment Tracking", tag:"MLOps",
+        subs:[
+          { name:"MLflow", desc:"Tracking runs, logging params/metrics/artifacts, model registry" },
+          { name:"Weights & Biases", desc:"Real-time dashboards, sweeps for HPO, artifact versioning" },
+          { name:"DVC (Data Version Control)", desc:"Versioning datasets and models, pipelines, remote storage" },
+        ]
+      },
+      { name:"Model Serving & APIs", tag:"MLOps",
+        subs:[
+          { name:"FastAPI for ML", desc:"REST endpoints, Pydantic validation, async inference" },
+          { name:"Model Optimization", desc:"Quantization (INT8), pruning, ONNX export, TorchScript" },
+          { name:"TorchServe / TF Serving", desc:"Production model servers, batching, health checks" },
+          { name:"BentoML", desc:"Service packaging, runners, adaptive batching" },
+        ]
+      },
+      { name:"Containerization & Deployment", tag:"Infra",
+        subs:[
+          { name:"Docker for ML", desc:"Dockerfile, building images, CUDA base images, multi-stage builds" },
+          { name:"Kubernetes Basics", desc:"Pods, deployments, services, ingress, HPA" },
+          { name:"Helm Charts", desc:"Packaging k8s apps, values files, templating" },
+          { name:"CI/CD for ML", desc:"GitHub Actions, automated testing, model validation pipelines" },
+        ]
+      },
+      { name:"Cloud ML Platforms", tag:"Cloud",
+        subs:[
+          { name:"AWS SageMaker", desc:"Training jobs, endpoints, feature store, pipelines" },
+          { name:"GCP Vertex AI", desc:"AutoML, custom training, model registry, batch predictions" },
+          { name:"Azure ML", desc:"Compute clusters, designer, managed endpoints" },
+          { name:"Serverless Inference", desc:"AWS Lambda + EFS, GCP Cloud Run, cold start tradeoffs" },
+        ]
+      },
+      { name:"Monitoring & Data Pipelines", tag:"MLOps",
+        subs:[
+          { name:"Apache Airflow", desc:"DAGs, operators, scheduling, backfill, XCom" },
+          { name:"Feature Stores", desc:"Feast, Tecton, online vs offline features, point-in-time correctness" },
+          { name:"Data Drift Detection", desc:"PSI, KS-test, Evidently AI, alerting on distribution shifts" },
+          { name:"Model Performance Monitoring", desc:"Logging predictions, A/B testing, shadow mode, retraining triggers" },
+        ]
+      },
+    ]
+  },
+];
+
+const saved = JSON.parse(localStorage.getItem('aiml_detailed_v2') || '{}');
+
+function save(key, val) {
+  const s = JSON.parse(localStorage.getItem('aiml_detailed_v2') || '{}');
+  s[key] = val;
+  localStorage.setItem('aiml_detailed_v2', JSON.stringify(s));
+}
+
+function updateProgress() {
+  const allSubs = document.querySelectorAll('.sub-item');
+  const doneSubs = document.querySelectorAll('.sub-item.done');
+  const pct = allSubs.length ? Math.round(doneSubs.length / allSubs.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('totalTopics').textContent = document.querySelectorAll('.topic').length;
+  document.getElementById('totalSubs').textContent = allSubs.length;
+  document.getElementById('doneSubs').textContent = doneSubs.length;
+}
+
+const roadmapEl = document.getElementById('roadmap');
+
+phases.forEach((phase, pi) => {
+  const phaseEl = document.createElement('div');
+  phaseEl.className = `phase${pi===0?' open':''}`;
+  phaseEl.style.setProperty('--phase-color', phase.color);
+  phaseEl.style.setProperty('--phase-glow', phase.glow);
+
+  const topicsHTML = phase.topics.map((topic, ti) => {
+    const topicKey = `${phase.id}_t${ti}`;
+    const subsHTML = topic.subs.map((sub, si) => {
+      const subKey = `${topicKey}_s${si}`;
+      const isDone = saved[subKey] || false;
+      return `<li class="sub-item${isDone?' done':''}" data-key="${subKey}" onclick="toggleSub(this)">
+        <div class="sub-check">${isDone?'✓':''}</div>
+        <div class="sub-text">
+          <div class="sub-name">${sub.name}</div>
+          <div class="sub-desc">${sub.desc}</div>
+        </div>
+      </li>`;
+    }).join('');
+
+    return `<div class="topic" id="${topicKey}">
+      <div class="topic-header" onclick="toggleSubtopics('${topicKey}')">
+        <div class="topic-check" onclick="event.stopPropagation();toggleTopic('${topicKey}')"></div>
+        <div class="topic-name">${topic.name}</div>
+        <div class="topic-tag">${topic.tag}</div>
+        <div class="subtoggle">▸ ${topic.subs.length} subtopics</div>
+      </div>
+      <div class="subtopics">
+        <div class="subtopics-label">subtopics</div>
+        <ul class="sub-list">${subsHTML}</ul>
+      </div>
+    </div>`;
+  }).join('');
+
+  phaseEl.innerHTML = `
+    <div class="phase-header" onclick="togglePhase(this)">
+      <div class="phase-num">${phase.num}</div>
+      <div class="phase-title-wrap">
+        <div class="phase-title">${phase.title}</div>
+        <div class="phase-meta">⏱ ${phase.duration} &nbsp;·&nbsp; ${phase.topics.length} topics</div>
+      </div>
+      <div class="phase-toggle">▾</div>
+    </div>
+    <div class="phase-body"><div class="topics-list">${topicsHTML}</div></div>
+  `;
+
+  roadmapEl.appendChild(phaseEl);
+
+  if (pi < phases.length - 1) {
+    const conn = document.createElement('div');
+    conn.className = 'connector';
+    roadmapEl.appendChild(conn);
+  }
+});
+
+function togglePhase(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+function toggleSubtopics(topicKey) {
+  const el = document.getElementById(topicKey);
+  el.classList.toggle('sub-open');
+}
+
+function toggleTopic(topicKey) {
+  const el = document.getElementById(topicKey);
+  el.classList.toggle('done');
+}
+
+function toggleSub(el) {
+  el.classList.toggle('done');
+  const isDone = el.classList.contains('done');
+  el.querySelector('.sub-check').textContent = isDone ? '✓' : '';
+  save(el.dataset.key, isDone);
+  updateProgress();
+}
+
+// Restore sub-open states and done states
+document.querySelectorAll('.sub-item').forEach(el => {
+  if (saved[el.dataset.key]) {
+    el.classList.add('done');
+    el.querySelector('.sub-check').textContent = '✓';
+  }
+});
+
+setTimeout(updateProgress, 80);
+</script>
+</body>
+</html>
